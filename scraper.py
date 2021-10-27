@@ -1,14 +1,17 @@
 import re
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urldefrag
 from bs4 import BeautifulSoup
 import requests
+import time
+
 
 def scraper(url, resp):
-    print("HEREEEEEE")
     links = extract_next_links(url, resp)
     x = [link for link in links if is_valid(link)]
-    print(x)
+    for link in x:
+        print(link)
     return [link for link in links if is_valid(link)]
+
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -20,12 +23,21 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
-
     html = requests.get(resp.url)
     data = html.text
-    soup = BeautifulSoup(data)
-    url_list = [link.get('href') for link in soup.find_all('a')]
-    return url_list
+    soup = BeautifulSoup(data, features="html.parser")
+    url_set = set()
+    for link in soup.find_all('a'):
+        if resp.raw_response.content != None and resp.status == 200:
+            try:
+                url_set.add(urldefrag(link.get('href'))[0])
+                time.sleep(1)
+            except Exception:
+                print("ERROR HERE")
+                # url_set.add(link.get('href'))
+                # time.sleep(5)
+                pass
+    return list(url_set)
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
@@ -43,7 +55,9 @@ def is_valid(url):
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower()) and re.search(
+            r".*\.(ics.uci.edu|cs.uci.edu|informatics.uci.edu|stat.uci.edu|today.uci.edu/department/information_computer_sciences)", parsed.netloc.lower())
+
 
     except TypeError:
         print ("TypeError for ", parsed)
