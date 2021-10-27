@@ -1,7 +1,6 @@
 import re
 from urllib.parse import urlparse, urldefrag
 from bs4 import BeautifulSoup
-import requests
 import time
 
 
@@ -23,21 +22,18 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
-    html = requests.get(resp.url)
-    data = html.text
-    soup = BeautifulSoup(data, features="html.parser")
+
     url_set = set()
-    for link in soup.find_all('a'):
-        if resp.raw_response.content != None and resp.status == 200:
+    if (resp.raw_response is not None) and (resp.raw_response.content is not None) and (resp.status == 200):
+        soup = BeautifulSoup(resp.raw_response.content, features="html.parser")
+        for link in soup.find_all('a'):
             try:
                 url_set.add(urldefrag(link.get('href'))[0])
-                time.sleep(1)
+                time.sleep(.5)
             except Exception:
-                print("ERROR HERE")
-                # url_set.add(link.get('href'))
-                # time.sleep(5)
                 pass
     return list(url_set)
+
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
