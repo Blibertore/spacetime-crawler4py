@@ -24,12 +24,28 @@ def extract_next_links(url, resp):
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
 
     url_set = set()
+    prev_url = None
     if (resp.raw_response is not None) and (resp.raw_response.content is not None) and (resp.status == 200):
         soup = BeautifulSoup(resp.raw_response.content, features="html.parser")
         for link in soup.find_all('a'):
             try:
-                url_set.add(urldefrag(link.get('href'))[0])
-                time.sleep(.5)
+                defragged_url = urldefrag(link.get('href'))[0]  # get current URL and defragment
+
+                if prev_url is None: # first iteration
+                    url_set.add(defragged_url) # add defragged url to set
+                    time.sleep(.5)
+                    prev_url = defragged_url # set previous url to current URL
+                else: # iterations after first iteration
+                    current_url_parse = urlparse(defragged_url)  # parsed current URL
+                    prev_url_parse = urlparse(prev_url)  # parsed previous URL
+                    if (current_url_parse.scheme == prev_url_parse.scheme and current_url_parse.netloc == prev_url_parse.netloc and
+                        current_url_parse.path == prev_url_parse.path and current_url_parse.params == prev_url_parse.params and
+                        current_url_parse.query != prev_url_parse.query):
+                        prev_url = defragged_url
+                    else:
+                        url_set.add(defragged_url)
+                        time.sleep(.5)
+                        prev_url = defragged_url
             except Exception:
                 pass
     return list(url_set)
