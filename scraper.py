@@ -9,21 +9,22 @@ import os
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     try:
-        current_dir = str(os.getcwd())  # gets current working directory (path to scraper.py)
-        start_index = current_dir.find(r"/scraper.py")  # finds index within path of "/scraper.py" begins
-        if start_index != -1:
-            # remove "/scraper.py" from end of cwd & concatenate new directory
-            current_dir = current_dir[0:start_index] + "/UrlFiles"
-            os.mkdir(current_dir)  # create new directory that contains URL files
+        print(os.getcwd())
+        current_dir = str(os.getcwd()) + "/UrlFiles"  # gets current working directory (path to scraper.py)
+        # start_index = current_dir.find(r"/scraper.py")  # finds index within path of "/scraper.py" begins
+        # if start_index != -1:
+        #     # remove "/scraper.py" from end of cwd & concatenate new directory
+        # current_dir = current_dir[0:start_index] + "/UrlFiles"
+        os.mkdir(current_dir)  # create new directory that contains URL files
     except FileExistsError:
         pass
 
     x = [link for link in links if is_valid(link)]  # store every valid link
     for link in x:
-        link_hash = hashlib.md5(link).hexdigest()  # Get a HASH for EACH URL --> Name of file
+        link_hash = hashlib.md5(link.lower().encode("utf-8")).hexdigest()  # Get a HASH for EACH URL --> Name of file
         file_dir = os.path.join(current_dir, link_hash)  # Create path to file name
-        f = open(file_dir, "w")  # Open file to write content into
-        f.write(resp.raw_response.content())  # Write content to file
+        f = open(file_dir, "wb")  # Open file to write content into
+        f.write(resp.raw_response.content)  # Write content to file
 
     return [link for link in links if is_valid(link)]
 
