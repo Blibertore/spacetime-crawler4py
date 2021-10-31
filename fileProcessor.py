@@ -5,14 +5,10 @@ from bs4 import BeautifulSoup
 def get_url_files_dir():
     try:
         current_dir = str(os.getcwd())  # gets current working directory (path to scraper.py)
-        start_index = current_dir.find(r"/fileProcessor.py")  # finds index within path of "/fileProcessor.py" begins
-        if start_index != -1:
-            # remove "/fileProcessor.py" from end of cwd & concatenate new directory
-            url_files_directory = current_dir[0:start_index] + "/UrlFiles"
+        url_files_directory = current_dir + "/UrlFiles"
+        return url_files_directory
     except FileExistsError:
         pass
-
-    return url_files_directory
 
 
 def unique_pages():
@@ -25,3 +21,5 @@ def longest_page():
     for filename in os.listdir(url_files_directory):
         f = open(filename, "r")
 
+if __name__ == "__main__":
+    print(get_url_files_dir())
